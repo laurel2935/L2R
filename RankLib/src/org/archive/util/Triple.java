@@ -1,6 +1,9 @@
 package org.archive.util;
 
-public class Triple <FIRST, SECOND, THIRD> implements TripleInterface<FIRST, SECOND, THIRD> {
+import java.io.Serializable;
+
+public class Triple <FIRST, SECOND, THIRD> implements TripleInterface<FIRST, SECOND, THIRD>, Serializable {
+	private static final long serialVersionUID = 8683452581122832189L;
 	//
 	public FIRST first;
 	public SECOND second;
