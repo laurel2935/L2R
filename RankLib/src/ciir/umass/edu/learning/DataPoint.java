@@ -67,7 +67,8 @@ public abstract class DataPoint {
 				description = text.substring(idx);
 				text = text.substring(0, idx).trim();//remove the comment part at the end of the line
 			}
-			String[] fs = text.split(" ");
+			//String[] fs = text.split(" ");
+			String[] fs = text.split("\\s");
 			label = Float.parseFloat(fs[0]);
 			if(label < 0)
 			{

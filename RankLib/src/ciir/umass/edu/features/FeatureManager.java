@@ -195,6 +195,68 @@ public class FeatureManager {
 		}
 		return samples;
 	}
+	
+	//--
+	public static List<RankList> readInput_tem(String text, boolean mustHaveRelDoc, boolean useSparseRepresentation)	
+	{
+		List<RankList> samples = new ArrayList<RankList>();
+		int countRL = 0;
+		int countEntries = 0;
+		try {
+			//String content = "";
+			//BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(inputFile), "ASCII"));
+			String [] lineArray = text.split("\n");
+			
+			String lastID = "";
+			boolean hasRel = false;
+			List<DataPoint> rl = new ArrayList<DataPoint>();
+			//while((content = in.readLine()) != null)
+			for(String content: lineArray)
+			{
+				content = content.trim();
+				if(content.length() == 0)
+					continue;
+				if(content.indexOf("#")==0)
+					continue;
+				
+				if(countEntries % 10000 == 0)
+					System.out.print("\rReading temporal feature file : " + countRL + "... ");
+				
+				DataPoint qp = null;
+				if(useSparseRepresentation)
+					qp = new SparseDataPoint(content);
+				else
+					qp = new DenseDataPoint(content);
+
+				if(lastID.compareTo("")!=0 && lastID.compareTo(qp.getID())!=0)
+				{
+					if(!mustHaveRelDoc || hasRel)
+						samples.add(new RankList(rl));
+					rl = new ArrayList<DataPoint>();
+					hasRel = false;
+				}
+				
+				if(qp.getLabel() > 0)
+					hasRel = true;
+				lastID = qp.getID();
+				rl.add(qp);
+				countEntries++;
+			}
+			if(rl.size() > 0 && (!mustHaveRelDoc || hasRel))
+				samples.add(new RankList(rl));
+			//in.close();
+			//System.out.println("\rReading feature file [" + inputFile + "]... [Done.]            ");
+			System.out.println("(" + samples.size() + " ranked lists, " + countEntries + " entries read)");
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Error in FeatureManager::readInput(): " + ex.toString());
+			System.exit(1);
+		}
+		return samples;
+	}
+	//--
+	
 	/**
 	 * Read sets of rankings from multiple files. Then merge them altogether into a single ranking.
 	 * @param inputFiles
