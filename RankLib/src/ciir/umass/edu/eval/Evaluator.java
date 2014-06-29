@@ -749,6 +749,39 @@ public class Evaluator {
 			System.out.println("Model saved to: " + modelFile);
 		}
 	}
+	
+	//--
+	public void evaluate_tem(String sampleFile, String validationFile, String featureDefFile, double percentTrain, String saveModelFile)
+	{
+		List<RankList> trainingData = new ArrayList<RankList>();
+		List<RankList> testData = new ArrayList<RankList>();
+		int[] features = prepareSplit(sampleFile, featureDefFile, percentTrain, normalize, trainingData, testData);
+		List<RankList> validation = null;
+		if(validationFile.compareTo("") != 0)
+		{
+			validation = readInput(validationFile);
+			if(normalize)
+				normalize(validation, features);
+		}
+
+		RankerTrainer trainer = new RankerTrainer();
+		Ranker ranker = trainer.train(type, trainingData, validation, features, trainScorer);
+		
+		double rankScore = evaluate(ranker, testData);
+		
+		System.out.println(testScorer.name() + " on test data: " + SimpleMath.round(rankScore, 4));
+		
+		modelFile = saveModelFile;
+		
+		if(modelFile.compareTo("")!=0)
+		{
+			System.out.println("");
+			ranker.save(modelFile);
+			System.out.println("Model saved to: " + modelFile);
+		}
+	}
+	//--
+	
 	/**
 	 * Evaluate the currently selected ranking algorithm using percenTrain% of the training samples for training the rest as validation data.
 	 * Test data is specified separately.
