@@ -1138,25 +1138,71 @@ public class Evaluator {
 	}
 	
 	//--
-	private static boolean loaded = false;
-	private static Ranker temRanker = null;
+	//private static boolean loaded = false;
+	private static Ranker allTemRanker = null;
+	private static Ranker aTemRanker = null;
+	private static Ranker pTemRanker = null;
+	private static Ranker rTemRanker = null;
+	private static Ranker fTemRanker = null;
 	//
 	private static String getDocid(String description){
 		//#docid=sync3-20130223040102_864
 		return description.substring(description.indexOf("=")+1).trim();
 	}
 	//
-	public ArrayList<StrStrDouble> score(String modelFile, List<RankList> testList)
+	public ArrayList<StrStrDouble> score(int modelTypeInt, int subtopicTypeInt, String modelFile, List<RankList> testList)
 	{
-		ArrayList<StrStrDouble> resultList = new ArrayList<>();		
+		ArrayList<StrStrDouble> resultList = new ArrayList<>();	
 		
-		if(!loaded){
-			temRanker = rFact.loadRanker(modelFile);
+		//--
+		Ranker curRanker = null;
+		int[] features = null;
+		
+		if(0 == modelTypeInt){
+			if(null == allTemRanker){
+				allTemRanker = rFact.loadRanker(modelFile);
+			}
 			
-			loaded = true;
+			features = allTemRanker.getFeatures();
+			curRanker = allTemRanker;
+		}else{
+			if(subtopicTypeInt == 0){
+				if(null == aTemRanker){
+					aTemRanker = rFact.loadRanker(modelFile);
+				}
+				
+				features = aTemRanker.getFeatures();
+				curRanker = aTemRanker;
+			}else if(subtopicTypeInt == 1){
+				if(null == pTemRanker){
+					pTemRanker = rFact.loadRanker(modelFile);
+				}
+				
+				features = pTemRanker.getFeatures();
+				curRanker = pTemRanker;
+			}else if(subtopicTypeInt == 2){
+				if(null == rTemRanker){
+					rTemRanker = rFact.loadRanker(modelFile);
+				}
+				
+				features = rTemRanker.getFeatures();
+				curRanker = rTemRanker;
+			}else if(subtopicTypeInt == 3){
+				if(null == fTemRanker){
+					fTemRanker = rFact.loadRanker(modelFile);
+				}
+				
+				features = fTemRanker.getFeatures();
+				curRanker = fTemRanker;
+			}else{
+				System.err.println("SubtopicTypeInt Error!");
+				System.exit(1);
+			}
 		}
+		//--		
+		
 		//Ranker ranker = rFact.loadRanker(modelFile);
-		int[] features = temRanker.getFeatures();
+		//int[] features = temRanker.getFeatures();
 		
 		//List<RankList> test = readInput(testFile);
 		if(normalize)
@@ -1175,7 +1221,7 @@ public class Evaluator {
 					//out.write(l.getID() + "\t" + j + "\t" + ranker.eval(l.get(j))+"");
 					//out.newLine();
 					//qid, docid, score
-					tripleList.add(new StrStrDouble(l.getID(), getDocid(l.get(j).getDescription()), temRanker.eval(l.get(j))));
+					tripleList.add(new StrStrDouble(l.getID(), getDocid(l.get(j).getDescription()), curRanker.eval(l.get(j))));
 				}
 				//
 				Collections.sort(tripleList, new TripleComparatorByThird_Desc<String, String, Double>());
@@ -1192,10 +1238,10 @@ public class Evaluator {
 		return resultList;
 	}
 	//
-	public ArrayList<StrStrDouble> score(String modelFile, String featureText)
+	public ArrayList<StrStrDouble> score(int modelTypeInt, int subtopicTypeInt, String modelFile, String featureText)
 	{
 		//FeatureManager.readInput(inputFile, mustHaveRelDoc, useSparseRepresentation);	
-		return score(modelFile, FeatureManager.readInput_tem(featureText, mustHaveRelDoc, useSparseRepresentation));
+		return score(modelTypeInt, subtopicTypeInt, modelFile, FeatureManager.readInput_tem(featureText, mustHaveRelDoc, useSparseRepresentation));
 	}
 	//--
 	
